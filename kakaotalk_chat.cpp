@@ -15,16 +15,16 @@ namespace kakaotalk {
     if (in) {
       string s;
       int c;
-      while ((c = in.get()) != '\r')
+      while (in && (c = in.get()) != '\r')
         s.push_back(c);
       c = in.get(); // eliminate '\n'
       if (!(c == '\n' || c == EOF))
         throw runtime_error("Unexpected File Format");
       full_content = s;
+      analyse();
     } else {
       throw domain_error("End of File");
     }
-    analyse();
   }
 
   std::istream& operator>>(std::istream& in, kakaotalk::chat& res) {
@@ -34,11 +34,13 @@ namespace kakaotalk {
   }
 
   void chat::analyse() {
-    regex pattern_common("\
+    static const regex pattern_common("\
 ^(\\d+)년 (\\d+)월 (\\d+)일 (오전|오후) (\\d+):(\\d+), ((?:.|\\n)*)");
-    regex pattern_in("(.*)님이 들어왔습니다\\.((?:.|\\n)*)");
-    regex pattern_out("(.*)님(이 나갔습니다|을 내보냈습니다)\\.");
-    regex pattern_talk("(?:(.*) : ?)((?:.|\\n)*)");
+    static const regex pattern_in("([^:]*)님이 들어왔습니다\\.((?:.|\\n)*)");
+    static const regex pattern_out("([^:]*)님(이 나갔습니다|을 내보냈습니다)\\.");
+    static const regex pattern_talk("(?:([^:]*) : ?)((?:.|\\n)*)");
+    static const string pattern_extra1("삭제된 메시지입니다.");
+    static const string pattern_extra2("채팅방 관리자가 메시지를 가렸습니다.");
     
     std::smatch m_common;
     if (regex_match(full_content, m_common, pattern_common)) {
@@ -69,8 +71,12 @@ namespace kakaotalk {
         // 나가는 패턴인 경우
         type = chat::OUT;
         _name = m_content[1];
+      } else if (chat_content == pattern_extra1
+                 || chat_content == pattern_extra2) {
+        type = chat::EXTRA;
       } else {
         // '2019년 5월 27일 오전 12:22, 이런시발' 과 같은 잘못된 형식인 경우
+        std::cout << chat_content << std::endl;
         throw runtime_error("Unexpected Chat Pattern");
       }
     } else {
@@ -114,7 +120,9 @@ namespace kakaotalk {
 } // end of namespace kakaotalk
 
 #if defined( __KAKAO_TALK_CHAT_DEBUG )
-  
+
+#include <fstream>
+
 void kakaotalk::chat::test_cons1() {
   const string name = "kakaotalk::chat(istream&) creation test";
   using namespace std;

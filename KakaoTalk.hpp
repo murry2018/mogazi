@@ -6,6 +6,8 @@
 // KakaoTalk.hpp
 #include <iostream>
 #include <string>
+#include <map>
+#include <list>
 
 namespace kakaotalk {
   class chat {
@@ -14,7 +16,8 @@ namespace kakaotalk {
     enum chat_type { IN, OUT, TALK, EXTRA };
     
     /*** Constructors ***/
-    chat();
+    chat();                       // 유의: 디폴트 생성자로 생성된
+                                  // 객체에 read를 시도하지 마시오.
     chat(std::istream&);       
     // chat(const std::string&);  // 미구현: 당장은 필요치 않음
     
@@ -52,16 +55,31 @@ namespace kakaotalk {
   
     bool exist() const;
     operator bool() const; // synonym for exist()
+    void in();
+    void out();
 
     int nchat() const;
     operator int() const; // synonym for nchat()
+    mem_info& operator++();
+    mem_info& operator+=(int n);
 
     bool operator<(const mem_info& rhs) const;
+  private:
+    bool _exist;
+    int _nchat;
   };
 
   class room {
   public:
-    mem_info& operator[](const std::string&);
+    typedef unsigned long long size_type;
+    room(std::istream&);
+    std::list< std::pair<std::string, mem_info> > enrolls;
+    size_type member_total() const;
+    const std::string& room_name() const;
+  private:
+    size_type nmemb;
+    std::string name;
+    std::map<std::string, mem_info> members;
   };
 }
 
