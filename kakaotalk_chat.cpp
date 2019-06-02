@@ -36,7 +36,7 @@ namespace kakaotalk {
   void chat::analyse() {
     static const regex pattern_common("\
 ^(\\d+)년 (\\d+)월 (\\d+)일 (오전|오후) (\\d+):(\\d+), ((?:.|\\n)*)");
-    static const regex pattern_in("([^:]*)님이 들어왔습니다\\.((?:.|\\n)*)");
+    static const regex pattern_in("(?:([^:]*)님이 들어왔습니다\\.((?:.|\\n)*)|(?:[^:]*)님이 ([^:]*)님을 초대했습니다\\.)");
     static const regex pattern_out("([^:]*)님(이 나갔습니다|을 내보냈습니다)\\.");
     static const regex pattern_talk("(?:([^:]*) : ?)((?:.|\\n)*)");
     static const string pattern_extra1("삭제된 메시지입니다.");

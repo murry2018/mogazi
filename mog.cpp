@@ -37,5 +37,18 @@ int main(int argc, char **argv) {
 
   cout << myroom.member_total() - myroom.enrolls.size()
        << " 명이 조사 결과에서 누락되었습니다." << endl;
+
+  typedef std::pair<std::string, kakaotalk::mem_info> pairtype;
+  myroom.enrolls.sort([](const pairtype& x, const pairtype& y)
+                      { return x.first < y.first; });
+  cout << "재적자 목록" << endl;
+  int cnt = 0;
+  for (auto& each : myroom.enrolls) {
+    cout << '[' << each.first << "] ";
+    if (cnt++ / 5 > 0) {
+      cnt = 0;
+      cout << endl;
+    }
+  }
   return 0;
 }
